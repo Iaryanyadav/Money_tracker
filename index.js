@@ -1,5 +1,3 @@
-
-
 var express = require("express");
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
@@ -7,15 +5,13 @@ var mongoose = require("mongoose");
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public')); // Serve static files from 'public' directory
+app.use(express.static('public'));
 
-// Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
 var db = mongoose.connection;
 db.on('error', () => console.log("Error in connecting to the Database"));
 db.once('open', () => console.log("Connected to Database"));
 
-// Define a schema and model for MongoDB
 const expenseSchema = new mongoose.Schema({
     Category: String,
     Amount: Number,
@@ -24,7 +20,6 @@ const expenseSchema = new mongoose.Schema({
 });
 const Expense = mongoose.model('Expense', expenseSchema);
 
-// Handle POST request to add an expense
 app.post("/add", async (req, res) => {
     try {
         const { category_select, amount_input, info, date_input } = req.body;
@@ -42,18 +37,15 @@ app.post("/add", async (req, res) => {
     }
 });
 
-// Serve the HTML file for the root route
 app.get("/", (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-// Handle GET request to fetch all expenses and return as HTML
 app.get('/get', async (req, res) => {
     try {
         const expenses = await Expense.find({});
         let totalAmount = 0;
 
-        // Generate HTML table rows
         let tableRows = expenses.map(expense => {
             if (expense.Category === 'Income') {
                 totalAmount += expense.Amount;
@@ -71,7 +63,6 @@ app.get('/get', async (req, res) => {
             `;
         }).join('');
 
-        // Generate complete HTML
         const html = `
             <!DOCTYPE html>
             <html lang="en">
@@ -104,7 +95,6 @@ app.get('/get', async (req, res) => {
             </html>
         `;
 
-        // Set content type to HTML
         res.setHeader('Content-Type', 'text/html');
         res.send(html);
     } catch (error) {
@@ -112,7 +102,6 @@ app.get('/get', async (req, res) => {
     }
 });
 
-// Start the server
 app.listen(5000, () => {
     console.log("Listening on port 5000");
 });
